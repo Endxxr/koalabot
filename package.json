@@ -1,0 +1,16 @@
+{
+  "name": "ilkoalaaiutante",
+  "version": "0.0.1",
+  "description": "Il Koala Aiutante >> Discord Bot created by Ender#7020",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "EnderLXXVII",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.5.0",
+    "discord.js": "^12.5.3",
+    "ffmpeg-static": "^4.3.0"
+  }
+}
