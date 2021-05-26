@@ -1,5 +1,7 @@
 module.exports = {
 	name: 'stop',
+    description: 'Fa andare offline il bot :( | Cooldown: 9*10 alla cinquantesima | Uso: non usarlo',
+    cooldown: '999  ',
 	execute(message, args) {
 		const admins = ["504004837390942302", "503999815261356032"]
         const Discord = require('discord.js')

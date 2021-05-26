@@ -1,6 +1,6 @@
 {
   "name": "ilkoalaaiutante",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Il Koala Aiutante >> Discord Bot created by Ender#7020",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "dependencies": {
     "@discordjs/opus": "^0.5.0",
     "discord.js": "^12.5.3",
-    "ffmpeg-static": "^4.3.0"
+    "ffmpeg-static": "^4.3.0",
+    "get-audio-duration": "^2.0.3"
   }
 }

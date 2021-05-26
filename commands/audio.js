@@ -1,35 +1,62 @@
 module.exports = {
     name: 'audio',
-    execute(message, args, CanaleVocale) {
-        let audios = ["bruh.mp3", "cut_g.mp3", "kid_scream.mp3", "great_time.mp3", "hello_there.mp3", "fbi_open_up.mp3", "wrong_number.mp3", "alot_of_damage.mp3"];
+    description: 'Riproduce un audio presente tra i file del koala | Cooldown: 10sec | Uso: ?audio _@menzione_ ', //Play a chosen audio from the koala database | Cooldown: 10sec | Usage:
+    cooldown: '10',
+
+    execute(message, args, CanaleVocale, AudioFiles) { 
+        
+
+        
+        
+        const { getAudioDurationInSeconds } = require('get-audio-duration'); 
+        let playing
         let name = args[1] + ".mp3";
-        console.log(name)
-        console.log("[Command] ?audio " + message.author.id)
+        //let audioinseconds = getAudioDurationInSeconds(`./audio/${name}`).then((duration) => {
+            //seconds = duration*1000; //Get the duration of the audio file 
+            //});        
+
+        console.log("[Command] ?audio " + message.author.id + message.guild.name)
         if (!CanaleVocale) {
             message.channel.send("Il Koala e' confuso, non ti vede in nessun canale vocale :( ")
+            console.log(`[Voice] The user ${message.author.id} isn't in a voice channel` )
+        
+        } else if (playing == true) {
+            message.channel.send("Aspetta che la riproduzione del seguente suono finisca!")
+            console.log(`[VOICE] Already playing something! (Error)`)
+        
         } else {
-            if (audios.includes(name)) {
+            if (args.includes("stop")) {
+                if (!CanaleVocale) {
+                    message.channel.send("Non posso fermare niente se non sei in un canale vocale!")       
+
+                } else {
+                    leave();
+                }       
+            
+            } else if  (AudioFiles.includes(name)) {
+                let audioinseconds = getAudioDurationInSeconds(`./audio/${name}`).then((duration) => {
+                    seconds = duration*1000; //Get the duration of the audio file 
+                    }); 
+                playing = true;
                 CanaleVocale.join()
                 .then(connection => {
-                    timeoutobj = setTimeout(leave, 20*1000)
-                    clearTimeout(timeoutobj)
-                    timeoutobj = setTimeout(leave, 20*1000)
+                    connection.voice.setSelfDeaf(true); //SelfDeaf for save bandwidth
                     connection.play(`./audio/${name}`)
-                    console.log(`[Voice] Played the sound ${name} `)
-                    
+                    console.log(`[Voice] Played the sound ${name} for the user ${message.author} in the server ${message.guild.name}`)
+                    TimeOut = setTimeout(stop, seconds+1500); 
                 })
             } else {
                 message.channel.send(`L'audio ${name} non esiste!`)
-                console.log(`[Voice] A user tried to play ${name} but it doesn't exist!`)
-            }
+                console.log(`[Voice] The user ${message.author} tried to play ${name} but it doesn't exist!`)
+            }               
             
                 
-            
-        }
-        function leave(connection) {
-            CanaleVocale.leave()
-            console.log("[Voice] Left")
-            message.channel.send("Il Koala e' annoiato e quindi esce dalla chat vocale")
+            function stop() {
+                playing = false;
+                CanaleVocale.leave()
+                console.log(`[Voice] Left from the channel of ${message.author.id} in the server ${message.guild.name}`)
+                message.channel.send("Riproduzione Finita.")  
+                }
+            }  
         }
     }
-}

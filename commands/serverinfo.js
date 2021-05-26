@@ -1,6 +1,8 @@
 
 module.exports = {
     name: 'serverinfo',
+    description: "Mostra le informazioni base sul server | Cooldown: 5 sec | Uso: ?serverinfo",
+    cooldown: '5',
     execute(message, server, botsinserver) {
         const Discord = require('discord.js')
 

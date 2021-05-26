@@ -1,33 +1,60 @@
+console.log("The koala woke up!")
 const fs = require('fs');
 const Discord = require('discord.js')
 const bot = new Discord.Client();
-bot.commands = new Discord.Collection();
+const { token } = require("./config.json");
+const { brotliCompress } = require('zlib');
+const { Console } = require('console');
+
+ 
+//Create an array that have inside all the command avaible 
+
+bot.commands = new Discord.Collection(); 
 console.log("Loading Commands...")
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js')); //Create an array with all the commands 
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+let cmdnames = []
 for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+	console.log("Requiring File")
+    const command = require(`./commands/${file}`);
+    
+    let cmdname = command.name //Creates an array with the name of all commands
+    cmdnames.push('?'+ cmdname)
+    
 
 	// set a new item in the Collection
 	// with the key as the command name and the value as the exported module
 	bot.commands.set(command.name, command);
 }
-
-const { token } = require("./config.json")
 console.log(bot.commands)
+
+
+
+//Create an array that have inside all audios avaible 
+console.log("Loading Audio Files...")
+const AudioFiles = fs.readdirSync('./audio').filter(file => file.endsWith('.mp3'));
+console.log(AudioFiles)
+
+
 
 
 
 
 let message 
+let cooldownarray = [];
 
+const isNSFW = new Discord.MessageEmbed()
+    .setColor('#0099ff')
+    .setTitle('Comando NSFW')
+    .setDescription("Dato il tipo di umorismo che non puo' piacere a tutti e alcuni possono trovarlo offensivo, l'utilizzo di questo comando e' riservato ai canali NSFW.")
+    .addField('Versione', 'Alpha 0.0.2')
 
-const StartEmbed = new Discord.MessageEmbed() //when the bot starts, it will send a message in a specific channel
+const StartEmbed = new Discord.MessageEmbed()
     .setColor('#0099ff')
     .setTitle('Bot Avviato')
     .setDescription(':white_check_mark: **BOT AVVIATO**')
-    .addField('Versione', 'Alpha 0.0.1')
+    .addField('Ender', 'Alpha 0.0.2')
 
-const StopEmbed = new Discord.MessageEmbed() //when the bot stops, it will send a message in a specific channel
+const StopEmbed = new Discord.MessageEmbed()
     .setColor('#0099ff')
     .setTitle('Il Koala Va A Dormire')
     .setDescription(':x: **BOT STOPPATO** richiesto da un amministratore in chat.')
@@ -45,55 +72,109 @@ bot.on("ready", (ready) => {
     console.log("Setting Presence...")
     bot.user.setActivity("Pornhub", {
         type: "WATCHING",
-        url: "https://www.twitch.tv/cekko_104"  //Twitch channel
+        url: "https://www.twitch.tv/cekko_104"
     })
         .catch(console.error);    
     console.log("[STATUS] Bot Online")
-    bot.channels.cache.get("835260489276981256").send(StartEmbed); //read line 24
+    bot.channels.cache.get("835260489276981256").send(StartEmbed);
+
 
 })
 
 
 bot.on("message", (message) => {
     
-    let args = message.content.split(" "); //splits the message into array 
+    const { member } = message
+    if (member == null) {
+        console.log("[ERROR] Member is null! Why ? It doesn't matter btw") //idk why, but if Mee6 sends a message with an embed inside, member = null
+        return
+    }
 
-    switch (args[0]) {
+    if (member.user.bot)  return //Ignore bot's messages
+    
+    
+    let args = message.content.split(" "); //splits the message into array 
+    
+    let guildID = message.guild.id; 
+    let userID = message.member.id;
+    let command = args[0]   
+    let cooldown
+    let cmd = args[0] 
+    
+    if (cmdnames.includes(cmd)) {
+        cmd = cmd.substring(1, cmd.length+1) + ".js" 
+        cmdfile = require(`./commands/${cmd}`) //Require from the file the cooldown
+        cooldown = cmdfile.cooldown
+        cooldown = Number(cooldown) //Convert the string to a number
+    }
+
+    let cooldownstring = `${command}-${userID}-${guildID}-${cooldown}` //?command-123456789-123456789-69
+    console.log(cooldownstring)
+        
+    if (cooldownarray.length > 0 && cooldownarray.includes(cooldownstring)) { //If the cooldownstring is in the array, prevent the execution of the commands
+        message.reply(`Stai infastidendo il koala ! Aspetta prima di ripetere quel comando. Devi aspettare ${cooldown} secondi tra un comando e l'altro`)
+        return
+    }
+
+    cooldownarray.push(cooldownstring) //Add a cooldown for that user
+    
+    //After x seconds, the cooldown of the command get deleted 
+    if (cooldownarray.length > 0) { 
+        setTimeout(() => {
+            cooldownarray = cooldownarray.filter((string) => {
+                return string !== cooldownstring 
+                
+            })
+        }, cooldown*1000);  
+} 
+    
+    bot.commands.get('sentences').execute(message, args, gods) 
+
+    switch (args[0]) { 
+    
+        case "?clearcooldowns":
+            bot.commands.get('clearcooldowns').execute(message, args, cooldownarray)
+            break
+        
+        case "?soluzionefinale":
+            bot.commands.get('soluzionefinale').execute(message, isNSFW)
+            break
+        case "?donna":
+            bot.commands.get('donna').execute(message, args, isNSFW)
+            break   
+        case "?slowmode":
+            bot.commands.get('slowmode').execute(message, args)
+            break
+        case "?userinfo":
+            bot.commands.get('userinfo').execute(message, args);
+            break
+        
+        case "?eat":  
+            bot.commands.get('eat').execute(message, args);
+            break
+        //case "?sex":
+        //    bot.commands.get('sex').execute(message, args) 
+        //    break
+        
+        case "?cinque":
+            bot.commands.get('cinque').execute(message, args);
+            break
         
         case "?stop":
            bot.commands.get('stop').execute(message, args);
         break    
         
         case "?help":
-            bot.commands.get('help').execute(message, args);
+            bot.commands.get('help').execute(message, args, fs);
             break
 
 
         case "?nero":
-            bot.commands.get('nero').execute(message, args);
+            bot.commands.get('nero').execute(message, args, isNSFW);
             break
-
-
-        case "Mi":   
-            if (args[1] === "dissocio") {
-                message.channel.send("Anche io")
-                message.react("😬")
-            } else {
-                break
-            }
-            
-            break
-        
-        case "Ciao":  //iao = Ciao : At line 13 the script deletes the first letter of Ciao
-            console.log("[Automatic] Saluto un amico debole")
-            message.react("👋")
-            message.reply("Ciao amico debole")
-
-        break
-        
         
         case "?gay":
-            bot.commands.get('gay').execute(message, args);
+            bot.commands.get('gay').execute(message, args, isNSFW);
             break
         
 
@@ -118,20 +199,25 @@ bot.on("message", (message) => {
 
         case "?audio":
             let CanaleVocale = message.member.voice.channel;
-            bot.commands.get('audio').execute(message, args, CanaleVocale);
+            bot.commands.get('audio').execute(message, args, CanaleVocale, AudioFiles);
             break
+        case "?invite":
+            bot.commands.get('invite').execute(message, args)
+            break
+            
     }
+          
 })
 
 
-module.exports = { stop };
+module.exports = { stop }; //Read stop.js
 
 function stop() {
-    bot.channels.cache.get('835260489276981256').send(StopEmbed) //read line 30
+    bot.channels.cache.get('835260489276981256').send(StopEmbed)
     console.log("Il Koala Aiutante va a dormire :( ")
     process.exit()
 }
 
 
 
-bot.login(token) //set the token in the config
+bot.login(token)

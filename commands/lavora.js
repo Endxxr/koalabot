@@ -1,5 +1,7 @@
 module.exports = {
     name: 'lavora',
+    description: 'Fai andare a lavorare l\'utente menzionato. | Cooldown: 1 sec | ?lavora _@menzione_ ',
+    cooldown: '1',
     execute(message,args) {
         const Discord = require('discord.js')
         bot = new Discord.Client()
